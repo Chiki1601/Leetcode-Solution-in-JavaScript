@@ -1,30 +1,26 @@
-/**
- * @param {number[]} gas
- * @param {number[]} cost
- * @return {number}
- */
 var canCompleteCircuit = function(gas, cost) {
-var canCompleteCircuit = function(gas, cost) {
-    var total = 0;
-    var sumRemaining = 0;
-    var start = 0;
+    const n = gas.length;
 
-    for (var i = 0; i < gas.length; i++) {
-        var remaining = gas[i] - cost[i];
-        // track total remaining gas until i
-        if (sumRemaining >= 0) {
-            sumRemaining += remaining;
-        } else {
-            // if total remaing is smaller than 0, set start from i,
-            start = i;
-            // now the total remaining is the remaining at current i
-            sumRemaining = remaining;
-        }
-        total += remaining;
+    let gasRequired = 0;
+    let totalCost = 0;
+    for(let i = 0; i < n; i += 1) {
+        gasRequired += gas[i];
+        totalCost += cost[i];
+    }
+    if(totalCost > gasRequired) return -1;
+
+    const findReach = (end, i, prev = 0, isStart = true) => {
+        if(i === end && !isStart) return n + i;
+        if(prev + gas[i] < cost[i]) return i;
+
+        return findReach(end, (i+1)%n, prev + gas[i] - cost[i], false);
     }
 
-    // at the end, if total >= 0, it means there must be a circle to finish, and the
-    // start is the start
-    if (total >= 0) return start;
-    else return -1;
+    for(let i = 0; i < n;) {
+        const reach = findReach(i, i);
+        if(reach >= n) return i;
+        i = reach > i ? reach : i + 1;
+    }
+
+    return -1;
 };
