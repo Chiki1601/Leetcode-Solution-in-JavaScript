@@ -1,55 +1,51 @@
-var TimeLimitedCache = function() {
-  this.cache = {};
-  this.c = 0;
+var TimeLimitedCache = function () {
+  this.cache = new Map();
 };
 
-/** 
+/**
  * @param {number} key
  * @param {number} value
  * @param {number} time until expiration in ms
  * @return {boolean} if un-expired key already existed
  */
-TimeLimitedCache.prototype.set = function(key, value, duration) {
-  if (this.cache[key] !== undefined) {
-    if (this.cache[key].value === -1) {
-      this.c++;
-    } else {
-      res = true;
-      clearTimeout(this.cache[key].timeout);
-    }
-    this.cache[key] = {
-      value: value,
-      timeout: setTimeout(() => {
-        this.cache[key].value = -1;
-        this.c--;
-      }, duration),
-    }
+TimeLimitedCache.prototype.set = function (key, value, duration) {
+  var now = Date.now();
+  if (this.cache.has(key)) {
+    this.cache.set(key, { value: value, exp: now + duration });
+    return true;
   } else {
-    this.c++;
-    this.cache[key] = {
-      value,
-      timeout: setTimeout(() => {
-        this.cache[key].value = -1;
-        this.c--;
-      }, duration),
-    }
+    this.cache.set(key, { value: value, exp: now + duration });
+    return false;
   }
-  return res;
 };
 
-/** 
+/**
  * @param {number} key
  * @return {number} value associated with key
  */
-TimeLimitedCache.prototype.get = function(key) {
-  return this.cache[key]?.value || -1;
+TimeLimitedCache.prototype.get = function (key) {
+  var now = Date.now();
+
+  if (this.cache.has(key)) {
+    if (this.cache.get(key).exp > now) return this.cache.get(key).value;
+    else {
+      this.cache.delete(key);
+      return -1;
+    }
+  }
+  return -1;
 };
 
-/** 
+/**
  * @return {number} count of non-expired keys
  */
-TimeLimitedCache.prototype.count = function() {
-  return this.c;
+TimeLimitedCache.prototype.count = function () {
+  var count = 0;
+  var now = Date.now();
+  for (x of this.cache.values()) {
+    if (x.exp > now) count++;
+  }
+  return count;
 };
 
 /**
