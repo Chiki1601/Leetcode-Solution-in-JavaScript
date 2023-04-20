@@ -1,18 +1,14 @@
 /**
+ * @param {number[]} arr
  * @param {Function} fn
- * @param {number} t
- * @return {Function}
+ * @return {number[]}
  */
-var timeLimit = function(fn, t) {
-	return async function(...args) {
-        const originalFnPromise = fn(...args);
+var map = function (arr, fn) {
+  const res = [];
 
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => {
-                reject('Time Limit Exceeded')
-            }, t);
-        })
+  arr.forEach((elem, index) => {
+    res.push(fn(elem, index));
+  });
 
-        return Promise.race([originalFnPromise, timeoutPromise]);
-    }
+  return res;
 };
