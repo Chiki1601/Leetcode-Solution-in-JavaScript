@@ -1,33 +1,28 @@
-class Solution {
-    sortMatrix(matrix) {
-        // Object to store diagonals, where the key is the difference of row and column index
-        let diagonalMap = new Map();
-        let rows = matrix.length, cols = matrix[0].length;
+function sortMatrix(grid) {
+    let map = new Map();
 
-        // Traverse the matrix and group elements by their diagonal (row - col)
-        for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
-                let key = i - j;
-                if (!diagonalMap.has(key)) diagonalMap.set(key, []);
-                diagonalMap.get(key).push(matrix[i][j]);
+    // Store elements in heaps based on diagonal index
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[0].length; j++) {
+            let key = j - i;
+            if (!map.has(key)) {
+                map.set(key, key <= 0 ? [] : []);
             }
+            map.get(key).push(grid[i][j]);
         }
-
-        // Sort each diagonal: negative keys (upper diagonals) in ascending order,
-        // positive keys (lower diagonals) in descending order
-        for (let [key, values] of diagonalMap.entries()) {
-            if (key < 0) values.sort((a, b) => a - b);
-            else values.sort((a, b) => b - a);
-        }
-
-        // Populate the sorted values back into the matrix
-        for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
-                let key = i - j;
-                matrix[i][j] = diagonalMap.get(key).shift();
-            }
-        }
-
-        return matrix;
     }
+
+    // Sort diagonals
+    for (let [key, arr] of map) {
+        arr.sort(key <= 0 ? (a, b) => b - a : (a, b) => a - b);
+    }
+
+    // Place sorted elements back
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[0].length; j++) {
+            grid[i][j] = map.get(j - i).shift();
+        }
+    }
+
+    return grid;
 }
