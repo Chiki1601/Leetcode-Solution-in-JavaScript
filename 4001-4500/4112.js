@@ -1,39 +1,42 @@
+/**
+ * @param {number[]} parent
+ * @param {number[]} op
+ * @param {number[]} score
+ * @return {number}
+ */
 var maxScore = function(parent, op, score) {
     const n = parent.length;
-    const children = Array.from({ length: n }, () => []);
-    for (let i = 1; i < n; i++) {
-        children[parent[i]].push(i);
+    const deg = new Int32Array(n);
+    for (let i = 1; i < n; ++i) {
+        deg[parent[i]]++;
     }
     
-    const order = [0];
-    for (let i = 0; i < order.length; i++) {
-        const u = order[i];
-        for (const v of children[u]) {
-            order.push(v);
-        }
+    const sum = new Float64Array(n);
+    const mini = new Float64Array(n).fill(Infinity);
+    const q = [];
+    
+    for (let i = 0; i < n; ++i) {
+        if (deg[i] === 0) q.push(i);
     }
     
-    const dp = new Array(n).fill(0n);
-    for (let i = n - 1; i >= 0; i--) {
-        const u = order[i];
-        if (children[u].length === 0) {
-            dp[u] = BigInt(score[u]);
-            continue;
+    let head = 0;
+    while (head < q.length) {
+        const u = q[head++];
+        
+        let ans = score[u];
+        if (mini[u] !== Infinity) {
+            const penalty = op[u] ? mini[u] : Math.min(0, mini[u]);
+            ans += sum[u] - penalty;
         }
-        let totalSum = 0n;
-        let minChild = 9223372036854775807n;
-        for (const v of children[u]) {
-            totalSum += dp[v];
-            if (dp[v] < minChild) {
-                minChild = dp[v];
-            }
-        }
-        const sc = BigInt(score[u]);
-        if (op[u] === 1) {
-            dp[u] = sc + totalSum - minChild;
-        } else {
-            dp[u] = sc + totalSum - (0n < minChild ? 0n : minChild);
-        }
+        
+        if (u === 0) return ans;
+        
+        const p = parent[u];
+        sum[p] += ans;
+        if (ans < mini[p]) mini[p] = ans;
+        
+        if (--deg[p] === 0) q.push(p);
     }
-    return dp[0];
+    
+    return 0;
 };
